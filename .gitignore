@@ -1,0 +1,64 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Local Environment
+.env
+venv/
+.venv/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+
+# Database
+*.sqlite3
+*.db
+data/vectordb/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+
+# Document Data (non versionare file scaricati)
+data/normative/
+data/uploads/
+data/cache/
