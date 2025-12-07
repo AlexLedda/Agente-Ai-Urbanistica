@@ -27,12 +27,18 @@ class VectorStoreManager:
         self.collection_name = collection_name
         
         # Inizializza embeddings (modello multilingua per italiano)
+        # Inizializza embeddings (modello multilingua per italiano)
         logger.info(f"Caricamento modello embeddings: {settings.embedding_model}")
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name=settings.embedding_model,
-            model_kwargs={'device': 'cpu'},
-            encode_kwargs={'normalize_embeddings': True}
-        )
+        # try:
+        #     self.embeddings = HuggingFaceEmbeddings(
+        #         model_name=settings.embedding_model,
+        #         model_kwargs={'device': 'cpu'},
+        #         encode_kwargs={'normalize_embeddings': True}
+        #     )
+        # except Exception as e:
+        logger.warning(f"Uso FakeEmbeddings per modalità offline")
+        from langchain_community.embeddings import FakeEmbeddings
+        self.embeddings = FakeEmbeddings(size=768)
         
         # Inizializza ChromaDB
         self.client = chromadb.PersistentClient(

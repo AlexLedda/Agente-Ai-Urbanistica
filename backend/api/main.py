@@ -69,8 +69,12 @@ async def health_check():
 
 
 # Importa routes
-from backend.api.routes import analysis, normative
+from backend.api.routes import analysis, normative, ingestion, chat
+from backend.api import auth
 
+app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
+app.include_router(ingestion.router, prefix="/api/ingestion", tags=["ingestion"])
+app.include_router(chat.router, prefix="/api/chat", tags=["chat"])
 app.include_router(analysis.router, prefix="/api/analysis", tags=["analysis"])
 app.include_router(normative.router, prefix="/api/normative", tags=["normative"])
 

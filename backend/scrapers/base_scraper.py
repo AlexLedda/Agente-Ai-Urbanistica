@@ -16,14 +16,16 @@ from backend.config import settings
 class BaseScraper(ABC):
     """Classe base astratta per scraper normative."""
     
-    def __init__(self, name: str):
+    def __init__(self, name: str, verify_ssl: bool = True):
         """
         Inizializza lo scraper.
         
         Args:
             name: Nome dello scraper
+            verify_ssl: Verifica certificato SSL
         """
         self.name = name
+        self.verify_ssl = verify_ssl
         self.session = requests.Session()
         self.session.headers.update({
             'User-Agent': settings.scraper_user_agent
@@ -31,7 +33,12 @@ class BaseScraper(ABC):
         self.delay = settings.scraper_delay
         self.max_retries = settings.scraper_max_retries
         
-        logger.info(f"Scraper inizializzato: {name}")
+        if not self.verify_ssl:
+            # Disabilita warning SSL
+            import urllib3
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+        
+        logger.info(f"Scraper inizializzato: {name} (SSL verify={verify_ssl})")
     
     def fetch_url(
         self,
@@ -52,7 +59,7 @@ class BaseScraper(ABC):
             logger.debug(f"Fetching: {url}")
             time.sleep(self.delay)  # Rate limiting
             
-            response = self.session.get(url, timeout=30)
+            response = self.session.get(url, timeout=30, verify=self.verify_ssl)
             response.raise_for_status()
             
             return response

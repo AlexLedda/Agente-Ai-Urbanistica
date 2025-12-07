@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     openai_api_key: str
     anthropic_api_key: str
     google_ai_api_key: str
+
+    # Auth Configuration
+    secret_key: str = "supersecretkeychangeinproduction"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
     
     # Database Configuration
     vector_db_path: Path = Path("./data/vectordb")
@@ -82,7 +87,7 @@ NORMATIVE_SOURCES = {
             "leggi_principali": [
                 {
                     "name": "LR 38/1999 - Norme sul governo del territorio",
-                    "url": "https://www.regione.lazio.it/rl_urbanistica/?vw=leggiRegionali"
+                    "url": "https://www.regione.lazio.it/documenti/77609" # Placeholder per search logic
                 }
             ]
         }
@@ -91,14 +96,14 @@ NORMATIVE_SOURCES = {
         "tarquinia": {
             "name": "Comune di Tarquinia",
             "website": "https://www.comune.tarquinia.vt.it",
-            "prg_url": None,  # Da configurare
-            "regolamento_edilizio_url": None  # Da configurare
+            "prg_url": "https://www.comune.tarquinia.vt.it/c056050/hh/index.php",  # Landing S.U.E.
+            "regolamento_edilizio_url": "https://www.comune.tarquinia.vt.it/c056050/hh/index.php"  # Landing
         },
         "montalto_di_castro": {
             "name": "Comune di Montalto di Castro",
-            "website": "https://www.comune.montaldodicastro.vt.it",
-            "prg_url": None,  # Da configurare
-            "regolamento_edilizio_url": None  # Da configurare
+            "website": "https://www.comune.montaltodicastro.vt.it",
+            "prg_url": "https://www.comune.montaltodicastro.vt.it/c056036/hh/index.php",
+            "regolamento_edilizio_url": "https://www.comune.montaltodicastro.vt.it/c056036/hh/index.php"
         }
     }
 }
