@@ -25,7 +25,8 @@ COPY requirements.txt .
 
 # Installa dipendenze Python
 # Aggiungiamo unstructured che abbiamo installato manualmente
-RUN pip install --no-cache-dir --upgrade pip setuptools wheel Cython PyYAML && \
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir --upgrade pip setuptools wheel Cython PyYAML && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copia il codice sorgente

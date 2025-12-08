@@ -41,7 +41,9 @@ GOOGLE_AI_API_KEY=...
 SECRET_KEY=...
 ```
 
-## Dati e Persistenza
+## Dati
+- Tipo istanza: **t3.medium** (2vCPU, 4GB RAM).
+- Volume (Disco): **Minimo 20GB** (8GB di default NON bastano per le librerie AI).
 I dati sono salvati in volumi Docker mappati sulle cartelle locali:
 - `./data`: Contiene il database vettoriale e i file caricati/libreria.
 - `./logs`: Log del sistema.

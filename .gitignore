@@ -62,3 +62,9 @@ logs/
 data/normative/
 data/uploads/
 data/cache/
+
+# Deployment Artifacts
+backend.tar.gz
+backend_part_*
+urban-ai-deploy.zip
+*.pem
