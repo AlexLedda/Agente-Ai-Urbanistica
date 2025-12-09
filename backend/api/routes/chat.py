@@ -25,6 +25,7 @@ class ChatRequest(BaseModel):
     message: str
     history: List[ChatMessage] = []
     municipality: Optional[str] = None
+    province: Optional[str] = None
     region: Optional[str] = None
 
 class ChatResponse(BaseModel):
@@ -47,6 +48,7 @@ async def chat_message(
         docs = retriever.retrieve(
             query=request.message,
             municipality=request.municipality,
+            province=request.province,
             region=request.region,
             top_k=3
         )

@@ -34,64 +34,63 @@ async def list_files(current_user: User = Depends(get_current_active_user)):
 @router.post("/upload")
 async def upload_files(
     files: List[UploadFile] = File(...),
-    normative_level: str = Form("comunale"), # Default a comunale
-    municipality: Optional[str] = Form(None),
+    normative_level: str = Form("comunale"), 
     region: Optional[str] = Form(None),
+    province: Optional[str] = Form(None),
+    municipality: Optional[str] = Form(None),
     current_user: User = Depends(get_current_active_user)
 ):
     """
-    Carica file normativi, li processa e li indicizza.
+    Carica file normativi (PDF, HTML, TXT) e li indicizza.
     """
-    logger.info(f"Ricevuti {len(files)} file da utente {current_user.username}")
-    
-    processor = NormativeDocumentProcessor()
-    vector_store = MultiLevelVectorStore()
-    
     results = []
     
     for file in files:
-        if not file.filename.lower().endswith('.pdf'):
-            logger.warning(f"File saltato (non PDF): {file.filename}")
-            continue
-            
-        file_path = UPLOAD_DIR / file.filename
+        # Salva file temporaneamente
+        temp_path = Path("temp_uploads") / file.filename
+        temp_path.parent.mkdir(exist_ok=True)
         
         try:
-            # Salva il file
-            with file_path.open("wb") as buffer:
+            with temp_path.open("wb") as buffer:
                 shutil.copyfileobj(file.file, buffer)
             
-            logger.info(f"File salvato: {file_path}")
+            # Determina store level
+            store_level = "nazionale"
+            if normative_level == "regionale" or normative_level == "provinciale":
+                store_level = "regionale"
+            elif normative_level == "comunale":
+                store_level = "comunale"
             
-            # Processa il file
-            chunks = processor.process_normative_file(
-                file_path=file_path,
-                normative_level=normative_level,
-                region=region,
-                municipality=municipality
+            # Processa e indicizza
+            processor = NormativeDocumentProcessor()
+            processed_chunks = processor.process_normative_file(
+                temp_path,
+                normative_level,
+                region,
+                municipality,
+                province  # Pass province to processor
             )
             
-            # Aggiungi al vector store
-            # Mappa livello normativo a key del vector store
-            store_level = normative_level # Deve corrispondere a keys in MultiLevelVectorStore
-            if store_level not in ["nazionale", "regionale", "comunale"]:
-                 store_level = "comunale" # Fallback
-            
-            ids = vector_store.add_documents(chunks, level=store_level)
+            # Inserisci nel vector store appropriato
+            vector_store = MultiLevelVectorStore()
+            ids = vector_store.add_documents(processed_chunks, store_level)
             
             results.append({
                 "filename": file.filename,
                 "status": "success",
-                "chunks": len(chunks),
-                "ids_count": len(ids)
+                "chunks": len(processed_chunks),
+                "ids": len(ids)
             })
             
         except Exception as e:
-            logger.error(f"Errore processando {file.filename}: {e}")
+            logger.error(f"Errore caricamento {file.filename}: {e}")
             results.append({
                 "filename": file.filename,
                 "status": "error",
                 "message": str(e)
             })
-            
+        finally:
+            if temp_path.exists():
+                temp_path.unlink()
+    
     return {"results": results}

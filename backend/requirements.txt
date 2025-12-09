@@ -17,7 +17,7 @@ certifi==2025.11.12
 cffi==2.0.0
 charset-normalizer==3.4.4
 loguru
-
+chromadb
 click==8.3.1
 coloredlogs==15.0.1
 constantly==23.10.4
@@ -38,9 +38,17 @@ frozenlist==1.8.0
 fsspec==2025.12.0
 google-ai-generativelanguage
 google-generativeai
+langchain
+langchain-community
+langchain-text-splitters
 langchain-google-genai
 langchain-openai
 langchain-anthropic
+pytesseract
+opencv-python-headless
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
 pydantic-settings
 google-api-core==2.28.1
 google-api-python-client==2.187.0

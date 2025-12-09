@@ -312,6 +312,7 @@ class MultiLevelVectorStore:
         self,
         query: str,
         municipality: Optional[str] = None,
+        province: Optional[str] = None,
         region: Optional[str] = None,
         k: int = 5
     ) -> List[Document]:
@@ -321,6 +322,7 @@ class MultiLevelVectorStore:
         Args:
             query: Query di ricerca
             municipality: Comune (se specificato, cerca prima qui)
+            province: Provincia (se specificato, cerca prima qui)
             region: Regione (se specificato, cerca prima qui)
             k: Numero totale di risultati
             
@@ -338,7 +340,19 @@ class MultiLevelVectorStore:
             )
             all_results.extend(comunale_results)
         
-        # 2. Cerca a livello regionale
+         # 2. Cerca a livello provinciale (usando store regionale o dedicato se esistesse)
+        # Nota: Al momento usiamo store regionale o comunale con metadato province
+        # Cerchiamo nello store 'regionale' filtrando per provincia se siamo ancora sotto k
+        if province and len(all_results) < k:
+             # Proviamo a cercare nello store regionale documenti specifici della provincia
+            provinciale_results = self.stores["regionale"].search(
+                query,
+                k=k - len(all_results),
+                filter_dict={"province": province}
+            )
+            all_results.extend(provinciale_results)
+
+        # 3. Cerca a livello regionale
         if region and len(all_results) < k:
             regionale_results = self.stores["regionale"].search(
                 query,
@@ -347,7 +361,7 @@ class MultiLevelVectorStore:
             )
             all_results.extend(regionale_results)
         
-        # 3. Cerca a livello nazionale (più generico)
+        # 4. Cerca a livello nazionale (più generico)
         if len(all_results) < k:
             nazionale_results = self.stores["nazionale"].search(
                 query,

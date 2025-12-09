@@ -19,6 +19,7 @@ retriever = NormativeRetriever(vector_store)
 async def search_normative(
     query: str = Query(..., description="Query di ricerca"),
     municipality: Optional[str] = Query(None, description="Comune"),
+    province: Optional[str] = Query(None, description="Provincia"),
     region: Optional[str] = Query("Lazio", description="Regione"),
     top_k: int = Query(5, description="Numero risultati")
 ):
@@ -28,6 +29,7 @@ async def search_normative(
     Args:
         query: Query di ricerca
         municipality: Comune (opzionale)
+        province: Provincia (opzionale)
         region: Regione
         top_k: Numero di risultati
         
@@ -42,6 +44,7 @@ async def search_normative(
             query,
             municipality=municipality,
             region=region,
+            province=province,
             top_k=top_k
         )
         

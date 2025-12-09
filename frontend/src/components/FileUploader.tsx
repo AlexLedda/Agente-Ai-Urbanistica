@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, X } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import LocationSelector from './LocationSelector';
 
 export const FileUploader = ({ onUploadSuccess }: { onUploadSuccess?: () => void }) => {
     const [dragActive, setDragActive] = useState(false);
@@ -10,6 +11,13 @@ export const FileUploader = ({ onUploadSuccess }: { onUploadSuccess?: () => void
     const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
     const [errorMessage, setErrorMessage] = useState('');
     const { token } = useAuth();
+
+    const [selectedLocation, setSelectedLocation] = useState({
+        region: '',
+        province: '',
+        municipality: '',
+        normative_level: 'nazionale'
+    });
 
     const handleDrag = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -58,7 +66,11 @@ export const FileUploader = ({ onUploadSuccess }: { onUploadSuccess?: () => void
                 formData.append('files', file);
             });
 
-            // TODO: Sostituire con endpoint reale quando pronto
+            // Append metadata
+            if (selectedLocation.region) formData.append('region', selectedLocation.region);
+            if (selectedLocation.province) formData.append('province', selectedLocation.province);
+            if (selectedLocation.municipality) formData.append('municipality', selectedLocation.municipality);
+            formData.append('normative_level', selectedLocation.normative_level);
 
             await axios.post('/api/ingestion/upload', formData, {
                 headers: {
@@ -80,7 +92,10 @@ export const FileUploader = ({ onUploadSuccess }: { onUploadSuccess?: () => void
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto">
+        <div className="w-full max-w-2xl mx-auto space-y-6">
+
+            <LocationSelector onLocationSelect={setSelectedLocation} />
+
             <div
                 className={`relative border-2 border-dashed rounded-xl p-8 transition-all duration-200 ease-in-out ${dragActive
                     ? 'border-blue-500 bg-blue-500/10'

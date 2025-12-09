@@ -41,6 +41,7 @@ class NormativeRetriever:
         query: str,
         municipality: Optional[str] = None,
         region: Optional[str] = None,
+        province: Optional[str] = None,
         normative_level: Optional[str] = None,
         top_k: Optional[int] = None,
         use_rerank: Optional[bool] = None
@@ -52,6 +53,7 @@ class NormativeRetriever:
             query: Query di ricerca
             municipality: Comune per ricerca gerarchica
             region: Regione per ricerca gerarchica
+            province: Provincia per ricerca gerarchica
             normative_level: Livello specifico (se None, cerca gerarchicamente)
             top_k: Numero di risultati (default da config)
             use_rerank: Se True, applica re-ranking (default da config)
@@ -72,6 +74,7 @@ class NormativeRetriever:
                 normative_level,
                 municipality,
                 region,
+                province,
                 top_k
             )
         else:
@@ -80,6 +83,7 @@ class NormativeRetriever:
                 query,
                 municipality=municipality,
                 region=region,
+                province=province,
                 k=top_k * 2  # Recupera più documenti per il re-ranking
             )
         
@@ -104,6 +108,7 @@ class NormativeRetriever:
         level: str,
         municipality: Optional[str],
         region: Optional[str],
+        province: Optional[str],
         k: int
     ) -> List[Document]:
         """Ricerca su un livello normativo specifico."""
@@ -111,10 +116,21 @@ class NormativeRetriever:
         
         if municipality and level == "comunale":
             filter_dict["municipality"] = municipality
-        elif region and level in ["regionale", "comunale"]:
+        elif province and (level in ["regionale", "provinciale", "comunale"]):
+             filter_dict["province"] = province
+        elif region and (level in ["regionale", "provinciale", "comunale"]):
             filter_dict["region"] = region
         
-        store = self.vector_store.stores[level]
+        # Map provinciale to regionale store
+        target_store = level
+        if level == "provinciale":
+            target_store = "regionale"
+            
+        store = self.vector_store.stores.get(target_store)
+        if not store:
+             logger.warning(f"Livello store {level} non trovato, uso default nazionale")
+             store = self.vector_store.stores["nazionale"]
+
         
         if filter_dict:
             return store.search(query, k=k, filter_dict=filter_dict)

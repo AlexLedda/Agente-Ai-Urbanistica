@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, FileText, Loader2 } from 'lucide-react';
+import { Send, Bot, FileText, Loader2, MapPin, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import LocationSelector from './LocationSelector';
 
 interface Message {
     id: string;
@@ -26,6 +27,15 @@ export const ChatAssistant = () => {
     const [isLoading, setIsLoading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Location context state
+    const [isContextOpen, setIsContextOpen] = useState(false);
+    const [selectedLocation, setSelectedLocation] = useState({
+        region: '',
+        province: '',
+        municipality: '',
+        normative_level: ''
+    });
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -48,16 +58,22 @@ export const ChatAssistant = () => {
         setIsLoading(true);
 
         try {
+            const body = {
+                message: userMsg.content,
+                history: messages.map(m => ({ role: m.role, content: m.content })),
+                // Add context
+                region: selectedLocation.region || undefined,
+                province: selectedLocation.province || undefined,
+                municipality: selectedLocation.municipality || undefined
+            };
+
             const response = await fetch('/api/chat/message', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({
-                    message: userMsg.content,
-                    history: messages.map(m => ({ role: m.role, content: m.content }))
-                })
+                body: JSON.stringify(body)
             });
 
             if (!response.ok) {
@@ -91,17 +107,42 @@ export const ChatAssistant = () => {
     return (
         <div className="flex flex-col h-[600px] w-full max-w-4xl mx-auto bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-2xl">
             {/* Header */}
-            <div className="bg-gray-900 px-6 py-4 border-b border-gray-700 flex items-center">
-                <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
-                    <Bot className="w-6 h-6 text-blue-400" />
+            <div className="bg-gray-900 border-b border-gray-700">
+                <div className="px-6 py-4 flex items-center justify-between">
+                    <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
+                            <Bot className="w-6 h-6 text-blue-400" />
+                        </div>
+                        <div>
+                            <h2 className="text-lg font-bold text-white">Assistente Urbanistico</h2>
+                            <p className="text-xs text-green-400 flex items-center">
+                                <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
+                                Online
+                            </p>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={() => setIsContextOpen(!isContextOpen)}
+                        className={`flex items-center text-xs px-3 py-1.5 rounded-lg border transition-colors ${isContextOpen
+                                ? 'bg-blue-600/20 border-blue-500/50 text-blue-300'
+                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'
+                            }`}
+                    >
+                        <MapPin size={14} className="mr-1.5" />
+                        {selectedLocation.municipality || selectedLocation.region || "Imposta Contesto"}
+                        {isContextOpen ? <ChevronUp size={14} className="ml-1.5" /> : <ChevronDown size={14} className="ml-1.5" />}
+                    </button>
                 </div>
-                <div>
-                    <h2 className="text-lg font-bold text-white">Assistente Urbanistico</h2>
-                    <p className="text-xs text-green-400 flex items-center">
-                        <span className="w-2 h-2 rounded-full bg-green-500 mr-2 animate-pulse"></span>
-                        Online
-                    </p>
-                </div>
+
+                {/* Collapsible Context Selector */}
+                {isContextOpen && (
+                    <div className="px-6 pb-4 bg-gray-900 border-b border-gray-700 animate-in slide-in-from-top-2 duration-200">
+                        <div className="bg-gray-800 rounded-lg p-1">
+                            <LocationSelector onLocationSelect={setSelectedLocation} />
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Messages */}

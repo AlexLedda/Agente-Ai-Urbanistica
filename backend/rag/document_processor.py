@@ -66,6 +66,7 @@ class NormativeDocumentProcessor:
         document: Document,
         normative_level: str,
         region: Optional[str] = None,
+        province: Optional[str] = None,
         municipality: Optional[str] = None
     ) -> Dict[str, Any]:
         """
@@ -75,6 +76,7 @@ class NormativeDocumentProcessor:
             document: Documento da cui estrarre metadati
             normative_level: Livello normativo (nazionale/regionale/comunale)
             region: Regione (per normative regionali/comunali)
+            province: Provincia (per normative provinciali/comunali)
             municipality: Comune (per normative comunali)
             
         Returns:
@@ -83,6 +85,7 @@ class NormativeDocumentProcessor:
         metadata = {
             "normative_level": normative_level,
             "region": region,
+            "province": province,
             "municipality": municipality,
             "processed_date": datetime.now().isoformat()
         }
@@ -108,7 +111,7 @@ class NormativeDocumentProcessor:
         metadata.update(document.metadata)
         
         return metadata
-    
+
     def chunk_document(
         self,
         document: Document,
@@ -209,7 +212,8 @@ class NormativeDocumentProcessor:
         file_path: Path,
         normative_level: str,
         region: Optional[str] = None,
-        municipality: Optional[str] = None
+        municipality: Optional[str] = None,
+        province: Optional[str] = None
     ) -> List[Document]:
         """
         Processa completamente un file normativo.
