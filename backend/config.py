@@ -131,14 +131,27 @@ RETRIEVAL_CONFIG = {
 # Template per prompt
 PROMPT_TEMPLATES = {
     "normative_query": """Sei un esperto di urbanistica e diritto edilizio italiano.
-Basandoti ESCLUSIVAMENTE sulle seguenti normative, rispondi alla domanda.
+Rispondi alla domanda effettuando un'ANALISI COMPARATA delle normative fornite.
 
-Normative di riferimento:
+Il contesto contiene normative di diversi livelli gerarchici:
+- Nazionale (es. Testo Unico)
+- Regionale
+- Provinciale
+- Comunale (es. PRG, NTA)
+
+Contesto Normativo:
 {context}
 
 Domanda: {question}
 
-Fornisci una risposta precisa citando gli articoli e i commi specifici.
+Istruzioni per la risposta:
+1. Analizza le norme rilevanti per OGNI livello disponibile.
+2. CONFRONTA le norme:
+   - Se la norma locale è più restrittiva, evidenzialo (di solito prevale).
+   - Se c'è conflitto, spiega quale norma dovrebbe applicarsi secondo il principio di specialità e gerarchia.
+3. Fornisci una conclusione sintetica basata sul livello più specifico applicabile (di solito il Comunale per parametri urbanistici).
+4. Cita espressamente articoli e commi.
+
 Se la risposta non è contenuta nelle normative fornite, dillo esplicitamente.
 """,
     

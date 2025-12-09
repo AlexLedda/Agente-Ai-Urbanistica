@@ -314,60 +314,80 @@ class MultiLevelVectorStore:
         municipality: Optional[str] = None,
         province: Optional[str] = None,
         region: Optional[str] = None,
-        k: int = 5
+        k: int = 3
     ) -> List[Document]:
         """
-        Ricerca gerarchica: priorità a normative più specifiche.
+        Ricerca gerarchica comparativa: recupera documenti da TUTTI i livelli rilevanti.
         
         Args:
             query: Query di ricerca
-            municipality: Comune (se specificato, cerca prima qui)
-            province: Provincia (se specificato, cerca prima qui)
-            region: Regione (se specificato, cerca prima qui)
-            k: Numero totale di risultati
+            municipality: Comune (se specificato, cerca anche qui)
+            province: Provincia (se specificato, cerca anche qui)
+            region: Regione (se specificato, cerca anche qui)
+            k: Numero di risultati PER LIVELLO
             
         Returns:
-            Lista di documenti ordinati per specificità
+            Lista unica di documenti con metadati sul livello
         """
         all_results = []
         
-        # 1. Cerca a livello comunale (più specifico)
+        # 1. Livello Comunale (se applicabile)
         if municipality:
-            comunale_results = self.stores["comunale"].search(
-                query,
-                k=k,
-                filter_dict={"municipality": municipality}
-            )
-            all_results.extend(comunale_results)
-        
-         # 2. Cerca a livello provinciale (usando store regionale o dedicato se esistesse)
-        # Nota: Al momento usiamo store regionale o comunale con metadato province
-        # Cerchiamo nello store 'regionale' filtrando per provincia se siamo ancora sotto k
-        if province and len(all_results) < k:
-             # Proviamo a cercare nello store regionale documenti specifici della provincia
-            provinciale_results = self.stores["regionale"].search(
-                query,
-                k=k - len(all_results),
-                filter_dict={"province": province}
-            )
-            all_results.extend(provinciale_results)
+            try:
+                comunale_results = self.stores["comunale"].search(
+                    query,
+                    k=k,
+                    filter_dict={"municipality": municipality}
+                )
+                for doc in comunale_results:
+                    doc.metadata["hierarchy_level"] = "Comunale"
+                    doc.metadata["context_scope"] = municipality
+                all_results.extend(comunale_results)
+            except Exception as e:
+                logger.warning(f"Errore ricerca comunale: {e}")
 
-        # 3. Cerca a livello regionale
-        if region and len(all_results) < k:
-            regionale_results = self.stores["regionale"].search(
-                query,
-                k=k - len(all_results),
-                filter_dict={"region": region}
-            )
-            all_results.extend(regionale_results)
+        # 2. Livello Provinciale (se applicabile - mappato su store regionale)
+        if province:
+            try:
+                provinciale_results = self.stores["regionale"].search(
+                    query,
+                    k=k,
+                    filter_dict={"province": province}
+                )
+                for doc in provinciale_results:
+                    doc.metadata["hierarchy_level"] = "Provinciale"
+                    doc.metadata["context_scope"] = province
+                all_results.extend(provinciale_results)
+            except Exception as e:
+                logger.warning(f"Errore ricerca provinciale: {e}")
+
+        # 3. Livello Regionale (se applicabile)
+        if region:
+            try:
+                regionale_results = self.stores["regionale"].search(
+                    query,
+                    k=k,
+                    filter_dict={"region": region}
+                )
+                for doc in regionale_results:
+                    doc.metadata["hierarchy_level"] = "Regionale"
+                    doc.metadata["context_scope"] = region
+                all_results.extend(regionale_results)
+            except Exception as e:
+                logger.warning(f"Errore ricerca regionale: {e}")
         
-        # 4. Cerca a livello nazionale (più generico)
-        if len(all_results) < k:
+        # 4. Livello Nazionale (Sempre)
+        try:
             nazionale_results = self.stores["nazionale"].search(
                 query,
-                k=k - len(all_results)
+                k=k
             )
+            for doc in nazionale_results:
+                doc.metadata["hierarchy_level"] = "Nazionale"
+                doc.metadata["context_scope"] = "Italia"
             all_results.extend(nazionale_results)
+        except Exception as e:
+            logger.warning(f"Errore ricerca nazionale: {e}")
         
-        logger.info(f"Ricerca gerarchica: {len(all_results)} risultati totali")
-        return all_results[:k]
+        logger.info(f"Ricerca gerarchica comparativa: {len(all_results)} documenti totali")
+        return all_results

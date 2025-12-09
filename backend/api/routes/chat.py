@@ -54,15 +54,24 @@ async def chat_message(
         )
         
         # Estrai contesto e sorgenti
-        context_text = "\n\n".join([doc.page_content for doc in docs])
+        context_parts = []
         sources = []
         for doc in docs:
+            # Format context with hierarchy info
+            level = doc.metadata.get("hierarchy_level", "Generico")
+            scope = doc.metadata.get("context_scope", "")
+            header = f"[ LIVELLO {level.upper()} - {scope} ]" if scope else f"[ LIVELLO {level.upper()} ]"
+            
+            context_parts.append(f"{header}\n{doc.page_content}")
+            
             sources.append({
                 "filename": doc.metadata.get("filename", "Sconosciuto"),
                 "page": doc.metadata.get("page", 0),
-                "normative_level": doc.metadata.get("level", "Sconosciuto"),
+                "normative_level": level,
                 "content_preview": doc.page_content[:200] + "..."
             })
+        
+        context_text = "\n\n".join(context_parts)
             
         # 2. Generazione Risposta con LLM
         # Costruisci prompt con contesto
