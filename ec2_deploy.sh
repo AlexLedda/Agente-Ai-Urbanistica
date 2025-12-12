@@ -53,9 +53,22 @@ fi
 
 # 5. Build and Start Containers
 echo "🏗️  Building and starting containers..."
+
+# Determine Docker Compose command
+if docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker compose"
+elif command -v docker-compose >/dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker-compose"
+else
+    echo "❌ Error: Docker Compose not found."
+    exit 1
+fi
+
+echo "Using command: $DOCKER_COMPOSE_CMD"
+
 # We need to use sudo unless the user has re-logged in after adding to docker group
-sudo docker compose down
-sudo docker compose up --build -d
+sudo $DOCKER_COMPOSE_CMD down
+sudo $DOCKER_COMPOSE_CMD up --build -d
 
 echo "✅ Deployment Complete!"
 echo "🌐 Access the app at http://$(curl -s ifconfig.me)"
