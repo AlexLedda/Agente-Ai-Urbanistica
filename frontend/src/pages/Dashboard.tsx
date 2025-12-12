@@ -76,8 +76,8 @@ export const Dashboard = () => {
                             key={item.id}
                             onClick={() => setActiveTab(item.id as any)}
                             className={`w-full flex items-center space-x-3 px-4 py-3.5 rounded-xl transition-all duration-200 group ${activeTab === item.id
-                                    ? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary border border-primary/20'
-                                    : 'text-gray-400 hover:bg-white/5 hover:text-white'
+                                ? 'bg-gradient-to-r from-primary/20 to-primary/10 text-primary border border-primary/20'
+                                : 'text-gray-400 hover:bg-white/5 hover:text-white'
                                 }`}
                         >
                             <item.icon
@@ -160,7 +160,6 @@ export const Dashboard = () => {
                                                     municipality: '',
                                                     normative_level: 'nazionale'
                                                 }}
-                                                fixedLevel={false}
                                             />
                                         </div>
                                     </div>
