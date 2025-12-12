@@ -1,7 +1,4 @@
-"""
-Agente AI principale per conformità urbanistica.
-Implementa architettura ReAct con tool calling.
-"""
+import json
 from typing import Dict, Any, List, Optional
 from pathlib import Path
 from loguru import logger
@@ -165,6 +162,30 @@ class UrbanComplianceAgent:
             "region": region
         }
     
+    def _extract_location_from_query(self, query: str) -> Dict[str, Optional[str]]:
+        """
+        Estrae regione e comune dalla query utente usando LLM.
+        """
+        try:
+            prompt = f"""Analizza la seguente domanda tecnica e estrai il Comune e la Regione se menzionati esplicitamente o implicitamente.
+            Domanda: {query}
+            
+            Rispondi ESCLUSIVAMENTE con un oggetto JSON valido nel seguente formato:
+            {{"municipality": "Nome Comune" | null, "region": "Nome Regione" | null}}
+            """
+            
+            # Usa il modello veloce per questa estrazione
+            response = self.router.gpt35.invoke(prompt)
+            content = response.content.replace("```json", "").replace("```", "").strip()
+            
+            data = json.loads(content)
+            logger.info(f"Location estratta dalla query: {data}")
+            return data
+            
+        except Exception as e:
+            logger.warning(f"Errore estrazione location da query: {e}")
+            return {"municipality": None, "region": None}
+
     def ask_question(
         self,
         question: str,
@@ -172,7 +193,7 @@ class UrbanComplianceAgent:
         region: Optional[str] = None
     ) -> str:
         """
-        Risponde a domande su normative urbanistiche.
+        Risponde a domande su normative urbanistiche con analisi comparata.
         
         Args:
             question: Domanda dell'utente
@@ -184,24 +205,34 @@ class UrbanComplianceAgent:
         """
         logger.info(f"Domanda: {question}")
         
-        # Recupera normative rilevanti
+        # 1. Se location non fornita, prova ad estrarla dalla query
+        if not municipality and not region:
+            extracted_loc = self._extract_location_from_query(question)
+            municipality = extracted_loc.get("municipality")
+            region = extracted_loc.get("region")
+            
+        logger.info(f"Contesto location: Comune={municipality}, Regione={region}")
+        
+        # 2. Recupera normative rilevanti (Gerarchico: Naz -> Reg -> Prov -> Com)
+        # Il retriever gestisce la logica gerarchica se chiamiamo retrieve senza specificare un livello forzato
+        # ma passando i parametri di location
         docs = self.retriever.retrieve(
             question,
             municipality=municipality,
             region=region,
-            top_k=5
+            top_k=6  # Aumentiamo il context window per avere più livelli
         )
         
         context = self.retriever.format_context(docs)
         
-        # Usa prompt template
+        # 3. Usa prompt template per analisi comparativa
         prompt = PromptTemplates.format_prompt(
-            PromptTemplates.NORMATIVE_QUERY,
+            PromptTemplates.COMPARATIVE_NORMATIVE_ANALYSIS,
             context=context,
             question=question
         )
         
-        # Genera risposta
+        # 4. Genera risposta usando un modello analitico (Claude opzionale o GPT-4)
         answer = self.router.analyze_with_best_model(
             prompt,
             TaskType.NORMATIVE_ANALYSIS,
@@ -224,13 +255,17 @@ class UrbanComplianceAgent:
         """
         logger.info(f"Chat message: {message}")
         
+        # Normalizza context
+        ctx = context or {}
+        
         # Determina intent
-        if any(word in message.lower() for word in ["conforme", "conformità", "verifica", "analizza"]):
-            # Intent: verifica conformità
-            if context and context.get("documents"):
+        if any(word in message.lower() for word in ["conforme", "conformità", "verifica", "analizza l'immobile"]):
+            # Intent: verifica conformità (richiede documenti)
+            if ctx.get("documents"):
                 return "Per verificare la conformità, usa il metodo analyze_property con i documenti."
             else:
-                return self.ask_question(message, context.get("municipality"), context.get("region"))
+                # Se l'utente chiede verifica ma è una domanda generale
+                return self.ask_question(message, ctx.get("municipality"), ctx.get("region"))
         else:
-            # Intent: domanda normativa
-            return self.ask_question(message, context.get("municipality"), context.get("region"))
+            # Intent: domanda normativa / analisi comparata
+            return self.ask_question(message, ctx.get("municipality"), ctx.get("region"))

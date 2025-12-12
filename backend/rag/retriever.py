@@ -99,6 +99,7 @@ class NormativeRetriever:
         if self.config["score_threshold"]:
             documents = self._filter_by_score(documents)
         
+        self.last_retrieved_docs = documents[:top_k]
         logger.success(f"Recuperati {len(documents)} documenti rilevanti")
         return documents[:top_k]
     

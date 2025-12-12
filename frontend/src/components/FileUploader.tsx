@@ -4,7 +4,18 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import LocationSelector from './LocationSelector';
 
-export const FileUploader = ({ onUploadSuccess }: { onUploadSuccess?: () => void }) => {
+interface FileUploaderProps {
+    onUploadSuccess?: () => void;
+    initialLocation?: {
+        region: string;
+        province: string;
+        municipality: string;
+        normative_level: string;
+    };
+    fixedLevel?: boolean; // If true, hides the normative level selector (implicit in this design)
+}
+
+export const FileUploader = ({ onUploadSuccess, initialLocation, fixedLevel = false }: FileUploaderProps) => {
     const [dragActive, setDragActive] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
@@ -12,7 +23,7 @@ export const FileUploader = ({ onUploadSuccess }: { onUploadSuccess?: () => void
     const [errorMessage, setErrorMessage] = useState('');
     const { token } = useAuth();
 
-    const [selectedLocation, setSelectedLocation] = useState({
+    const [selectedLocation, setSelectedLocation] = useState(initialLocation || {
         region: '',
         province: '',
         municipality: '',

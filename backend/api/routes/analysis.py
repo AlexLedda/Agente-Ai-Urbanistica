@@ -13,8 +13,12 @@ from backend.config import settings
 
 router = APIRouter()
 
-# Istanza agente (singleton)
-agent = UrbanComplianceAgent()
+from functools import lru_cache
+from fastapi import Depends
+
+@lru_cache()
+def get_agent():
+    return UrbanComplianceAgent()
 
 # Storage analisi in corso
 analyses = {}
@@ -125,7 +129,10 @@ async def upload_documents(
 
 
 @router.post("/{analysis_id}/run")
-async def run_analysis(analysis_id: str):
+async def run_analysis(
+    analysis_id: str,
+    agent: UrbanComplianceAgent = Depends(get_agent)
+):
     """
     Esegue l'analisi.
     

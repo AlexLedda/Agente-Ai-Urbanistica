@@ -10,12 +10,14 @@ from backend.rag.vector_store import MultiLevelVectorStore
 from backend.models.llm_router import LLMRouter, TaskType
 from backend.config import settings, PROMPT_TEMPLATES
 
+from backend.agents.urban_compliance_agent import UrbanComplianceAgent
+from functools import lru_cache
+
 router = APIRouter()
 
-# Istanze (singleton)
-vector_store = MultiLevelVectorStore()
-retriever = NormativeRetriever(vector_store)
-llm_router = LLMRouter()
+@lru_cache()
+def get_agent():
+    return UrbanComplianceAgent()
 
 class ChatMessage(BaseModel):
     role: str # "user" or "assistant"
@@ -35,7 +37,8 @@ class ChatResponse(BaseModel):
 @router.post("/message", response_model=ChatResponse)
 async def chat_message(
     request: ChatRequest,
-    current_user: User = Depends(get_current_active_user)
+    current_user: User = Depends(get_current_active_user),
+    agent: UrbanComplianceAgent = Depends(get_agent)
 ):
     """
     Endpoint per chat con assistente urbanistico.
@@ -43,59 +46,31 @@ async def chat_message(
     logger.info(f"Chat request da {current_user.username}: {request.message}")
     
     try:
-        # 1. Retrieval
-        # Cerca documenti rilevanti nel vector store
-        docs = retriever.retrieve(
-            query=request.message,
-            municipality=request.municipality,
-            province=request.province,
-            region=request.region,
-            top_k=3
+        # Usa l'agente per gestire la richiesta
+        # L'agente gestisce internamente retrieval, location extraction e prompt comparativo
+        response_text = agent.chat(
+            request.message,
+            context={
+                "municipality": request.municipality,
+                "province": request.province,
+                "region": request.region
+            }
         )
         
-        # Estrai contesto e sorgenti
-        context_parts = []
+        # Recupera le fonti usate dall'ultima query del retriever dell'agente
+        # Nota: Idealmente l'agente dovrebbe restituire anche le fonti. 
+        # Per ora recuperiamo dal retriever dell'agente (l'ultima query)
+        # TODO: Refactor agente per restituire oggetto strutturato con fonti
         sources = []
-        for doc in docs:
-            # Format context with hierarchy info
-            level = doc.metadata.get("hierarchy_level", "Generico")
-            scope = doc.metadata.get("context_scope", "")
-            header = f"[ LIVELLO {level.upper()} - {scope} ]" if scope else f"[ LIVELLO {level.upper()} ]"
-            
-            context_parts.append(f"{header}\n{doc.page_content}")
-            
-            sources.append({
-                "filename": doc.metadata.get("filename", "Sconosciuto"),
-                "page": doc.metadata.get("page", 0),
-                "normative_level": level,
-                "content_preview": doc.page_content[:200] + "..."
-            })
-        
-        context_text = "\n\n".join(context_parts)
-            
-        # 2. Generazione Risposta con LLM
-        # Costruisci prompt con contesto
-        system_prompt = PROMPT_TEMPLATES["normative_query"].format(
-            context=context_text,
-            question=request.message
-        )
-        
-        # Chiamata LLM
-        try:
-            response_text = llm_router.analyze_with_best_model(
-                prompt=request.message,
-                task_type=TaskType.NORMATIVE_ANALYSIS,
-                system_message=system_prompt
-            )
-        except Exception as e:
-            logger.warning(f"LLM fallito: {e}. Fallback a modalità offline.")
-            response_text = (
-                "**Modalità Offline**: Non posso generare una risposta completa perché "
-                "il servizio di intelligenza artificiale non è raggiungibile o configurato.\n\n"
-                "Tuttavia, ho trovato questi documenti rilevanti che potrebbero contenere la risposta:\n\n"
-            )
-            for src in sources:
-                response_text += f"- **{src['filename']}** (Pag. {src.get('page', '?')})\n"
+        # Questo è un accesso "sporco" allo stato, ma per ora funzionale
+        if hasattr(agent, 'retriever') and hasattr(agent.retriever, 'last_retrieved_docs'):
+             for doc in agent.retriever.last_retrieved_docs:
+                sources.append({
+                    "filename": doc.metadata.get("filename", "Sconosciuto"),
+                    "page": doc.metadata.get("page", 0),
+                    "normative_level": doc.metadata.get("normative_level", "Generico"),
+                    "content_preview": doc.page_content[:200] + "..."
+                })
                 
     except Exception as e:
         logger.error(f"Errore chat: {e}")

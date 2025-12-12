@@ -29,31 +29,31 @@ class VectorStoreManager:
         # Inizializza embeddings (modello multilingua per italiano)
         # Inizializza embeddings (modello multilingua per italiano)
         logger.info(f"Caricamento modello embeddings: {settings.embedding_model}")
-        # try:
-        #     self.embeddings = HuggingFaceEmbeddings(
-        #         model_name=settings.embedding_model,
-        #         model_kwargs={'device': 'cpu'},
-        #         encode_kwargs={'normalize_embeddings': True}
-        #     )
-        # except Exception as e:
-        logger.warning(f"Uso FakeEmbeddings per modalità offline")
-        from langchain_community.embeddings import FakeEmbeddings
-        self.embeddings = FakeEmbeddings(size=768)
-        
-        # Inizializza ChromaDB
-        self.client = chromadb.PersistentClient(
-            path=str(settings.vector_db_path),
-            settings=ChromaSettings(
-                anonymized_telemetry=False,
-                allow_reset=True
+        try:
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name=settings.embedding_model,
+                model_kwargs={'device': 'cpu'},
+                encode_kwargs={'normalize_embeddings': True}
             )
-        )
+            logger.info("Modello embeddings caricato con successo")
+        except Exception as e:
+            logger.warning(f"Errore caricamento embeddings: {e}. Uso FakeEmbeddings per modalità offline")
+            from langchain_community.embeddings import FakeEmbeddings
+            self.embeddings = FakeEmbeddings(size=768)
+        
+        # Inizializza ChromaDB (Compatibilità 0.3.x)
+        self.client = chromadb.Client(ChromaSettings(
+            chroma_db_impl="duckdb+parquet",
+            persist_directory=str(settings.vector_db_path),
+            anonymized_telemetry=False
+        ))
         
         # Inizializza vector store LangChain
         self.vector_store = Chroma(
             client=self.client,
             collection_name=collection_name,
-            embedding_function=self.embeddings
+            embedding_function=self.embeddings,
+            collection_metadata={"hnsw:space": "cosine"}
         )
         
         logger.success(f"Vector store inizializzato: {collection_name}")

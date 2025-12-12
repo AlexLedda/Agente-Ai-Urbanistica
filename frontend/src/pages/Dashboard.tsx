@@ -115,17 +115,96 @@ export const Dashboard = () => {
                         {activeTab === 'upload' && (
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between">
-                                    <h2 className="text-2xl font-bold">Carica Normative</h2>
+                                    <h2 className="text-2xl font-bold">Gestione Normative</h2>
                                     <span className="bg-blue-500/10 text-blue-400 text-xs px-2 py-1 rounded border border-blue-500/20">
                                         Supporto PDF
                                     </span>
                                 </div>
 
-                                <FileUploader onUploadSuccess={fetchFiles} />
+                                {/* Normativa Nazionale */}
+                                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                                    <div className="p-4 bg-gray-750 border-b border-gray-700 flex justify-between items-center">
+                                        <h3 className="text-lg font-semibold text-white">Normativa Nazionale</h3>
+                                    </div>
+                                    <div className="p-6">
+                                        <FileUploader
+                                            onUploadSuccess={fetchFiles}
+                                            initialLocation={{
+                                                region: '',
+                                                province: '',
+                                                municipality: '',
+                                                normative_level: 'nazionale'
+                                            }}
+                                            fixedLevel={false} // Allow seeing the selector but it will default to Nazionale
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Normativa Regionale */}
+                                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                                    <div className="p-4 bg-gray-750 border-b border-gray-700 flex justify-between items-center">
+                                        <h3 className="text-lg font-semibold text-white">Normativa Regionale</h3>
+                                    </div>
+                                    <div className="p-6">
+                                        <div className="mb-4 text-sm text-gray-400">
+                                            Seleziona la regione per caricare le leggi regionali specifiche.
+                                        </div>
+                                        <FileUploader
+                                            onUploadSuccess={fetchFiles}
+                                            initialLocation={{
+                                                region: '',
+                                                province: '',
+                                                municipality: '',
+                                                normative_level: 'regionale'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Normativa Provinciale */}
+                                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                                    <div className="p-4 bg-gray-750 border-b border-gray-700 flex justify-between items-center">
+                                        <h3 className="text-lg font-semibold text-white">Normativa Provinciale</h3>
+                                    </div>
+                                    <div className="p-6">
+                                        <div className="mb-4 text-sm text-gray-400">
+                                            Seleziona provincia per i regolamenti provinciali.
+                                        </div>
+                                        <FileUploader
+                                            onUploadSuccess={fetchFiles}
+                                            initialLocation={{
+                                                region: '',
+                                                province: '',
+                                                municipality: '',
+                                                normative_level: 'provinciale'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Normativa Comunale */}
+                                <div className="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+                                    <div className="p-4 bg-gray-750 border-b border-gray-700 flex justify-between items-center">
+                                        <h3 className="text-lg font-semibold text-white">Normativa Comunale</h3>
+                                    </div>
+                                    <div className="p-6">
+                                        <div className="mb-4 text-sm text-gray-400">
+                                            Seleziona il comune per caricare PRG, NTA e regolamenti edilizi.
+                                        </div>
+                                        <FileUploader
+                                            onUploadSuccess={fetchFiles}
+                                            initialLocation={{
+                                                region: '',
+                                                province: '',
+                                                municipality: '',
+                                                normative_level: 'comunale'
+                                            }}
+                                        />
+                                    </div>
+                                </div>
 
                                 <div className="mt-8">
-                                    <h3 className="text-lg font-semibold mb-4 text-gray-300">File Recenti</h3>
-
+                                    <h3 className="text-lg font-semibold mb-4 text-gray-300">File Recenti (Tutti i livelli)</h3>
                                     {recentFiles.length === 0 ? (
                                         <div className="bg-gray-800 rounded-xl border border-gray-700 p-8 text-center text-gray-500">
                                             Nessun file caricato di recente.
@@ -136,7 +215,8 @@ export const Dashboard = () => {
                                                 <thead className="bg-gray-700/50 text-gray-200">
                                                     <tr>
                                                         <th className="px-6 py-3 font-medium">Nome File</th>
-                                                        <th className="px-6 py-3 font-medium">Data</th>
+                                                        <th className="px-6 py-3 font-medium">Livello</th>
+                                                        <th className="px-6 py-3 font-medium">Territorio</th>
                                                         <th className="px-6 py-3 font-medium text-right">Dimensione</th>
                                                     </tr>
                                                 </thead>
@@ -147,8 +227,11 @@ export const Dashboard = () => {
                                                                 <Files className="w-4 h-4 mr-2 text-blue-400" />
                                                                 {file.name}
                                                             </td>
+                                                            <td className="px-6 py-4 capitalize">
+                                                                {file.normative_level || 'N/A'}
+                                                            </td>
                                                             <td className="px-6 py-4">
-                                                                {new Date(file.date * 1000).toLocaleDateString()}
+                                                                {file.municipality || file.province || file.region || 'Italia'}
                                                             </td>
                                                             <td className="px-6 py-4 text-right">
                                                                 {(file.size / 1024 / 1024).toFixed(2)} MB

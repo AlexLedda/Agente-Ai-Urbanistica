@@ -24,6 +24,31 @@ Istruzioni:
 
 Risposta:"""
 
+    # Analisi normativa comparativa
+    COMPARATIVE_NORMATIVE_ANALYSIS = """Sei un esperto di urbanistica e diritto edilizio, specializzato in analisi comparata delle normative.
+Analizza la richiesta dell'utente confrontando le normative ai diversi livelli gerarchici recuperati.
+
+Domanda Utente: {question}
+
+Contesto Normativo Recuperato:
+{context}
+
+Istruzioni di Analisi:
+1. IDENTIFICAZIONE: Estrai le norme pertinenti per ogni livello (Nazionale, Regionale, Provinciale, Comunale).
+2. CONFRONTO: Confronta le prescrizioni. Identifica eventuali conflitti o restrizioni aggiuntive a livello locale.
+3. GERARCHIA E PREVALENZA: 
+    - Ricorda che generalmente il livello locale (Comunale) non può derogare norme superiori imperative, ma può essere più restrittivo.
+    - Specifica quale norma prevale nel caso specifico della zona richiesta.
+4. APPLICAZIONE: Indica chiaramente cosa è consentito fare nel contesto specifico richiesto (es. nel Comune specificato).
+
+Struttura della Risposta:
+- **Analisi Normativa Comparata**: Sintesi delle regole per livello.
+- **Risoluzione dei Conflitti**: Se ci sono differenze, spiega quale norma prevale e perché.
+- **Conclusione Operativa**: Risposta diretta alla domanda basata sulla norma prevalente applicabile.
+- **Riferimenti**: Elenco puntato delle leggi/articoli citati.
+
+Risposta:"""
+
     # Verifica conformità
     COMPLIANCE_CHECK = """Sei un tecnico esperto in conformità urbanistica ed edilizia.
 Analizza la seguente situazione e verifica la conformità alle normative applicabili.

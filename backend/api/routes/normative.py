@@ -11,8 +11,16 @@ from backend.rag.retriever import NormativeRetriever
 router = APIRouter()
 
 # Istanze (singleton)
-vector_store = MultiLevelVectorStore()
-retriever = NormativeRetriever(vector_store)
+from functools import lru_cache
+from fastapi import Depends
+
+@lru_cache()
+def get_vector_store():
+    return MultiLevelVectorStore()
+
+@lru_cache()
+def get_retriever(vector_store: MultiLevelVectorStore = Depends(get_vector_store)):
+    return NormativeRetriever(vector_store)
 
 
 @router.get("/search")
@@ -21,7 +29,8 @@ async def search_normative(
     municipality: Optional[str] = Query(None, description="Comune"),
     province: Optional[str] = Query(None, description="Provincia"),
     region: Optional[str] = Query("Lazio", description="Regione"),
-    top_k: int = Query(5, description="Numero risultati")
+    top_k: int = Query(5, description="Numero risultati"),
+    retriever: NormativeRetriever = Depends(get_retriever)
 ):
     """
     Cerca normative urbanistiche.
@@ -133,7 +142,9 @@ async def refresh_normative():
 
 
 @router.get("/stats")
-async def get_normative_stats():
+async def get_normative_stats(
+    vector_store: MultiLevelVectorStore = Depends(get_vector_store)
+):
     """
     Statistiche sul database normative.
     
