@@ -6,7 +6,8 @@ from pathlib import Path
 from loguru import logger
 
 import chromadb
-from chromadb.config import Settings as ChromaSettings
+import chromadb
+# from chromadb.config import Settings as ChromaSettings (Removed)
 from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
@@ -41,12 +42,10 @@ class VectorStoreManager:
             from langchain_community.embeddings import FakeEmbeddings
             self.embeddings = FakeEmbeddings(size=768)
         
-        # Inizializza ChromaDB (Compatibilità 0.3.x)
-        self.client = chromadb.Client(ChromaSettings(
-            chroma_db_impl="duckdb+parquet",
-            persist_directory=str(settings.vector_db_path),
-            anonymized_telemetry=False
-        ))
+        # Inizializza ChromaDB (Nuova API)
+        self.client = chromadb.PersistentClient(
+            path=str(settings.vector_db_path)
+        )
         
         # Inizializza vector store LangChain
         self.vector_store = Chroma(
