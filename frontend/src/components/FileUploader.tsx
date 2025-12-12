@@ -12,10 +12,9 @@ interface FileUploaderProps {
         municipality: string;
         normative_level: string;
     };
-    fixedLevel?: boolean; // If true, hides the normative level selector (implicit in this design)
 }
 
-export const FileUploader = ({ onUploadSuccess, initialLocation, fixedLevel = false }: FileUploaderProps) => {
+export const FileUploader = ({ onUploadSuccess, initialLocation }: FileUploaderProps) => {
     const [dragActive, setDragActive] = useState(false);
     const [files, setFiles] = useState<File[]>([]);
     const [uploading, setUploading] = useState(false);
