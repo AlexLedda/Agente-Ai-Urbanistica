@@ -11,23 +11,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure SSH
+      - name: Deploy to EC2
         env:
           SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
           SSH_HOST: ${{ secrets.HOST_DNS }}
           SSH_USER: ${{ secrets.USERNAME }}
         run: |
-          mkdir -p ~/.ssh/
+          if [ -z "$SSH_HOST" ]; then
+            echo "Error: HOST_DNS secret is not set or empty."
+            exit 1
+          fi
+          if [ -z "$SSH_USER" ]; then
+            echo "Error: USERNAME secret is not set or empty."
+            exit 1
+          fi
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Error: EC2_SSH_KEY secret is not set or empty."
+            exit 1
+          fi
+
+          mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          cat >>~/.ssh/config <<END
-          Host ec2-instance
-            HostName $SSH_HOST
-            User $SSH_USER
-            IdentityFile ~/.ssh/deploy_key
-            StrictHostKeyChecking no
-          END
-
-      - name: Deploy to EC2
-        run: |
-          ssh ec2-instance 'cd Agente-Ai-Urbanistica && git pull origin main && ./ec2_deploy.sh'
+          
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key ${SSH_USER}@${SSH_HOST} 'cd Agente-Ai-Urbanistica && git pull origin main && ./ec2_deploy.sh'
