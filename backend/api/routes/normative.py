@@ -164,3 +164,40 @@ async def get_normative_stats(
     except Exception as e:
         logger.error(f"Errore nel recupero statistiche: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+@router.get("/locations")
+async def get_supported_locations():
+    """
+    Restituisce la lista delle località supportate con coordinate.
+    
+    Returns:
+        Lista di oggetti location con coordinate e metadati.
+    """
+    logger.info("Richiesta lista location supportate")
+    
+    locations = []
+    try:
+        from backend.config import NORMATIVE_SOURCES
+        
+        # Estrai Comuni
+        if "comunale" in NORMATIVE_SOURCES:
+            for key, data in NORMATIVE_SOURCES["comunale"].items():
+                if "coordinates" in data:
+                    locations.append({
+                        "id": key,
+                        "name": data["name"],
+                        "level": "comunale",
+                        "coordinates": data["coordinates"],
+                        "metadata": {
+                            "website": data.get("website"),
+                            "has_prg": "prg_url" in data
+                        }
+                    })
+        
+        # Estrai Regioni (se avessimo coordinate per centroidi regionali, potremmo aggiungerle)
+        # Per ora limitiamo ai comuni che sono i "segnalini" richiesti
+        
+        return {"locations": locations}
+        
+    except Exception as e:
+        logger.error(f"Errore nel recupero location: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

@@ -10,7 +10,7 @@ from PIL import Image
 import pytesseract
 import easyocr
 
-from backend.config import settings
+
 
 
 class OCRProcessor:

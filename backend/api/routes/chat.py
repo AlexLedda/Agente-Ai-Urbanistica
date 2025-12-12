@@ -8,7 +8,7 @@ from backend.models.user import User
 from backend.rag.retriever import NormativeRetriever
 from backend.rag.vector_store import MultiLevelVectorStore
 from backend.models.llm_router import LLMRouter, TaskType
-from backend.config import settings, PROMPT_TEMPLATES
+from backend.config import PROMPT_TEMPLATES
 
 from backend.agents.urban_compliance_agent import UrbanComplianceAgent
 from functools import lru_cache

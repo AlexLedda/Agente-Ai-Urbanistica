@@ -10,7 +10,7 @@ import requests
 from bs4 import BeautifulSoup
 from loguru import logger
 
-from backend.config import settings
+from backend.config import get_settings
 
 
 class BaseScraper(ABC):
@@ -27,6 +27,8 @@ class BaseScraper(ABC):
         self.name = name
         self.verify_ssl = verify_ssl
         self.session = requests.Session()
+        
+        settings = get_settings()
         self.session.headers.update({
             'User-Agent': settings.scraper_user_agent
         })
@@ -105,6 +107,7 @@ class BaseScraper(ABC):
             Path al file salvato
         """
         # Crea directory per questo scraper
+        settings = get_settings()
         scraper_dir = settings.normative_data_path / self.name
         scraper_dir.mkdir(parents=True, exist_ok=True)
         
@@ -147,6 +150,7 @@ class BaseScraper(ABC):
             logger.warning(f"Content-Type non è PDF: {content_type}")
         
         # Salva
+        settings = get_settings()
         scraper_dir = settings.normative_data_path / self.name
         scraper_dir.mkdir(parents=True, exist_ok=True)
         

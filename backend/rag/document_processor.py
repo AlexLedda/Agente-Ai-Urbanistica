@@ -15,7 +15,7 @@ from langchain_community.document_loaders import (
 )
 from langchain_core.documents import Document
 
-from backend.config import settings, CHUNKING_CONFIG
+from backend.config import CHUNKING_CONFIG
 
 
 class NormativeDocumentProcessor:

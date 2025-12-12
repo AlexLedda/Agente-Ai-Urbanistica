@@ -9,7 +9,7 @@ from loguru import logger
 
 from backend.agents.urban_compliance_agent import UrbanComplianceAgent
 from backend.api.models.schemas import AnalysisRequest, AnalysisResponse
-from backend.config import settings
+from backend.config import get_settings
 
 router = APIRouter()
 
@@ -82,6 +82,7 @@ async def upload_documents(
     logger.info(f"Upload documenti per analisi {analysis_id}")
     
     # Directory upload per questa analisi
+    settings = get_settings()
     upload_dir = settings.upload_path / analysis_id
     upload_dir.mkdir(parents=True, exist_ok=True)
     

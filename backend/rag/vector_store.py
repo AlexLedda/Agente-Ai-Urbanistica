@@ -12,7 +12,7 @@ from langchain_community.vectorstores import Chroma
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_core.documents import Document
 
-from backend.config import settings
+from backend.config import get_settings
 
 
 class VectorStoreManager:
@@ -27,7 +27,8 @@ class VectorStoreManager:
         """
         self.collection_name = collection_name
         
-        # Inizializza embeddings (modello multilingua per italiano)
+        settings = get_settings()
+        
         # Inizializza embeddings (modello multilingua per italiano)
         logger.info(f"Caricamento modello embeddings: {settings.embedding_model}")
         try:

@@ -8,7 +8,7 @@ from backend.api.deps import get_current_active_user
 from backend.models.user import User
 from backend.rag.document_processor import NormativeDocumentProcessor
 from backend.rag.vector_store import MultiLevelVectorStore
-from backend.config import settings
+from backend.config import get_settings
 
 router = APIRouter()
 
@@ -19,10 +19,14 @@ UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 @router.get("/files")
 async def list_files(current_user: User = Depends(get_current_active_user)):
     """Lista i file caricati."""
+    settings = get_settings() # Get settings inside the function
+    upload_dir = Path(settings.upload_path) # Use settings for upload_dir
+    upload_dir.mkdir(parents=True, exist_ok=True) # Ensure directory exists
+    
     files = []
-    if UPLOAD_DIR.exists():
+    if upload_dir.exists(): # Use upload_dir
         # Ordina per data di modifica (più recenti prima)
-        paths = sorted(UPLOAD_DIR.glob("*.pdf"), key=lambda f: f.stat().st_mtime, reverse=True)
+        paths = sorted(upload_dir.glob("*.pdf"), key=lambda f: f.stat().st_mtime, reverse=True)
         for p in paths:
             files.append({
                 "name": p.name,
@@ -43,6 +47,10 @@ async def upload_files(
     """
     Carica file normativi (PDF, HTML, TXT) e li indicizza.
     """
+    settings = get_settings() # Get settings inside the function
+    temp_upload_dir = Path(settings.temp_upload_path) # Use settings for temp_upload_path
+    temp_upload_dir.mkdir(exist_ok=True) # Ensure temp directory exists
+    
     results = []
     
     for file in files:

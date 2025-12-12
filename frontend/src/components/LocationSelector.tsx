@@ -23,9 +23,14 @@ interface LocationSelectorProps {
         normative_level: string;
     }) => void;
     forcedLevel?: 'nazionale' | 'regionale' | 'provinciale' | 'comunale';
+    initialSelection?: {
+        region?: string;
+        province?: string;
+        municipality?: string;
+    };
 }
 
-const LocationSelector: React.FC<LocationSelectorProps> = ({ onLocationSelect }) => {
+const LocationSelector: React.FC<LocationSelectorProps> = ({ onLocationSelect, initialSelection }) => {
     const [data, setData] = useState<LocationData[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -37,6 +42,15 @@ const LocationSelector: React.FC<LocationSelectorProps> = ({ onLocationSelect })
     const [regions, setRegions] = useState<string[]>([]);
     const [provinces, setProvinces] = useState<string[]>([]);
     const [municipalities, setMunicipalities] = useState<string[]>([]);
+
+    // Handle initial selection updates
+    useEffect(() => {
+        if (initialSelection && !loading && data.length > 0) {
+            if (initialSelection.region) setSelectedRegion(initialSelection.region);
+            if (initialSelection.province) setSelectedProvince(initialSelection.province);
+            if (initialSelection.municipality) setSelectedMunicipality(initialSelection.municipality);
+        }
+    }, [initialSelection, loading, data]);
 
     useEffect(() => {
         fetch('/data/comuni.json')

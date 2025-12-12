@@ -12,7 +12,7 @@ from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_anthropic import ChatAnthropic
 
-from backend.config import settings
+from backend.config import get_settings
 
 
 class TaskType(Enum):
@@ -29,6 +29,8 @@ class LLMRouter:
     
     def __init__(self):
         """Inizializza i client per tutti i modelli LLM."""
+        
+        settings = get_settings()
         
         # OpenAI GPT-4
         self.gpt4 = ChatOpenAI(
@@ -78,6 +80,7 @@ class LLMRouter:
             Modello LLM selezionato
         """
         if has_images:
+            settings = get_settings()
             # Per task con immagini, usa vision models
             logger.info(f"Task con immagini: usando {settings.primary_llm}")
             return self.gpt4  # GPT-4V

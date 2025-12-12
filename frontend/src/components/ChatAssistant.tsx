@@ -14,7 +14,15 @@ interface Message {
     }>;
 }
 
-export const ChatAssistant = () => {
+interface ChatAssistantProps {
+    initialContext?: {
+        region?: string;
+        province?: string;
+        municipality?: string;
+    };
+}
+
+export const ChatAssistant = ({ initialContext }: ChatAssistantProps) => {
     const { token } = useAuth();
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -35,6 +43,29 @@ export const ChatAssistant = () => {
         municipality: '',
         normative_level: ''
     });
+
+    // Initialize context if provided
+    useEffect(() => {
+        if (initialContext) {
+            setSelectedLocation(prev => ({
+                ...prev,
+                ...initialContext,
+                normative_level: initialContext.municipality ? 'comunale' : initialContext.region ? 'regionale' : ''
+            }));
+
+            // Auto-send welcome for location
+            if (initialContext.municipality) {
+                setMessages(prev => [
+                    ...prev,
+                    {
+                        id: Date.now().toString(),
+                        role: 'assistant',
+                        content: `Ho impostato il contesto su **${initialContext.municipality}**. Chiedimi pure le normative specifiche!`
+                    }
+                ]);
+            }
+        }
+    }, [initialContext]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -139,7 +170,10 @@ export const ChatAssistant = () => {
                 {isContextOpen && (
                     <div className="px-6 pb-4 bg-gray-900/80 border-b border-gray-700/50 animate-in slide-in-from-top-2 duration-200">
                         <div className="bg-gray-800/50 rounded-lg p-1 border border-gray-700/50">
-                            <LocationSelector onLocationSelect={setSelectedLocation} />
+                            <LocationSelector
+                                onLocationSelect={setSelectedLocation}
+                                initialSelection={initialContext}
+                            />
                         </div>
                     </div>
                 )}

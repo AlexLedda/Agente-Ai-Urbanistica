@@ -6,7 +6,7 @@ from typing import List, Optional
 from pathlib import Path
 
 
-class Settings(BaseSettings):
+class AppSettings(BaseSettings):
     """Configurazione applicazione caricata da variabili ambiente."""
     
     model_config = SettingsConfigDict(
@@ -16,9 +16,9 @@ class Settings(BaseSettings):
     )
     
     # LLM API Keys
-    openai_api_key: str
-    anthropic_api_key: str
-    google_ai_api_key: str
+    openai_api_key: Optional[str] = None
+    anthropic_api_key: Optional[str] = None
+    google_ai_api_key: Optional[str] = None
 
     # Auth Configuration
     secret_key: str = "supersecretkeychangeinproduction"
@@ -71,6 +71,15 @@ class Settings(BaseSettings):
         self.log_file.parent.mkdir(parents=True, exist_ok=True)
 
 
+
+
+from functools import lru_cache
+
+@lru_cache
+def get_settings() -> AppSettings:
+    return AppSettings()
+
+
 # Configurazioni specifiche per normative
 NORMATIVE_SOURCES = {
     "nazionale": {
@@ -95,12 +104,14 @@ NORMATIVE_SOURCES = {
     "comunale": {
         "tarquinia": {
             "name": "Comune di Tarquinia",
+            "coordinates": {"lat": 42.254, "lng": 11.757},
             "website": "https://www.comune.tarquinia.vt.it",
             "prg_url": "https://www.comune.tarquinia.vt.it/c056050/hh/index.php",  # Landing S.U.E.
             "regolamento_edilizio_url": "https://www.comune.tarquinia.vt.it/c056050/hh/index.php"  # Landing
         },
         "montalto_di_castro": {
             "name": "Comune di Montalto di Castro",
+            "coordinates": {"lat": 42.351, "lng": 11.609},
             "website": "https://www.comune.montaltodicastro.vt.it",
             "prg_url": "https://www.comune.montaltodicastro.vt.it/c056036/hh/index.php",
             "regolamento_edilizio_url": "https://www.comune.montaltodicastro.vt.it/c056036/hh/index.php"
@@ -197,5 +208,11 @@ Per ogni difformità rilevata, specifica:
 }
 
 
-# Singleton settings
-settings = Settings()
+from functools import lru_cache
+
+@lru_cache
+def get_settings() -> AppSettings:
+    return AppSettings()
+
+
+

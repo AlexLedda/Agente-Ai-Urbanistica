@@ -11,7 +11,7 @@ from langchain_community.retrievers import BM25Retriever
 from langchain_openai import ChatOpenAI
 
 from backend.rag.vector_store import MultiLevelVectorStore
-from backend.config import settings, RETRIEVAL_CONFIG
+from backend.config import get_settings, RETRIEVAL_CONFIG
 
 
 class NormativeRetriever:
@@ -28,6 +28,7 @@ class NormativeRetriever:
         self.config = RETRIEVAL_CONFIG
         
         # LLM per re-ranking (opzionale)
+        settings = get_settings()
         self.llm = ChatOpenAI(
             model="gpt-3.5-turbo",
             temperature=0,
