@@ -3,5 +3,71 @@
 @tailwind utilities;
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Default Theme (Blue/Ocean) */
+  --primary: 59 130 246; /* blue-500 */
+  --primary-dark: 29 78 216; /* blue-700 */
+  --secondary: 16 185 129; /* emerald-500 */
+  --accent: 139 92 246; /* violet-500 */
+  --background: 17 24 39; /* gray-900 */
+  --surface: 31 41 55; /* gray-800 */
+}
+
+/* Theme Classes */
+.theme-ocean {
+  --primary: 59 130 246;
+  --primary-dark: 29 78 216;
+  --secondary: 16 185 129;
+}
+
+.theme-forest {
+  --primary: 16 185 129; /* emerald-500 */
+  --primary-dark: 4 120 87; /* emerald-700 */
+  --secondary: 59 130 246;
+}
+
+.theme-sunset {
+  --primary: 249 115 22; /* orange-500 */
+  --primary-dark: 194 65 12; /* orange-700 */
+  --secondary: 236 72 153; /* pink-500 */
+}
+
+.theme-royal {
+  --primary: 139 92 246; /* violet-500 */
+  --primary-dark: 109 40 217; /* violet-700 */
+  --secondary: 59 130 246;
+}
+
+@layer base {
+  body {
+    @apply bg-gray-900 text-white antialiased;
+  }
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  @apply bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl;
+}
+
+.glass-card {
+  @apply bg-gray-800/60 backdrop-blur-md border border-gray-700/50 shadow-lg rounded-xl transition-all duration-300 hover:border-primary/50 hover:shadow-primary/20;
+}
+
+.glass-input {
+  @apply bg-gray-900/50 border border-gray-600 rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none transition-all placeholder-gray-500 text-white;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(31, 41, 55, 0.5); 
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.8); 
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.9); 
 }

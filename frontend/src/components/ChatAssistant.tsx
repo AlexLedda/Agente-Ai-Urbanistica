@@ -105,13 +105,13 @@ export const ChatAssistant = () => {
     };
 
     return (
-        <div className="flex flex-col h-[600px] w-full max-w-4xl mx-auto bg-gray-800 rounded-xl border border-gray-700 overflow-hidden shadow-2xl">
+        <div className="flex flex-col h-[600px] w-full max-w-4xl mx-auto glass-card overflow-hidden">
             {/* Header */}
-            <div className="bg-gray-900 border-b border-gray-700">
+            <div className="bg-gray-900/50 backdrop-blur-sm border-b border-gray-700/50">
                 <div className="px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-blue-600/20 flex items-center justify-center mr-4">
-                            <Bot className="w-6 h-6 text-blue-400" />
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center mr-4 shadow-lg shadow-primary/10">
+                            <Bot className="w-6 h-6 text-primary" />
                         </div>
                         <div>
                             <h2 className="text-lg font-bold text-white">Assistente Urbanistico</h2>
@@ -124,9 +124,9 @@ export const ChatAssistant = () => {
 
                     <button
                         onClick={() => setIsContextOpen(!isContextOpen)}
-                        className={`flex items-center text-xs px-3 py-1.5 rounded-lg border transition-colors ${isContextOpen
-                                ? 'bg-blue-600/20 border-blue-500/50 text-blue-300'
-                                : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700'
+                        className={`flex items-center text-xs px-3 py-1.5 rounded-lg border transition-all duration-300 ${isContextOpen
+                            ? 'bg-primary/20 border-primary/50 text-white'
+                            : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
                             }`}
                     >
                         <MapPin size={14} className="mr-1.5" />
@@ -137,8 +137,8 @@ export const ChatAssistant = () => {
 
                 {/* Collapsible Context Selector */}
                 {isContextOpen && (
-                    <div className="px-6 pb-4 bg-gray-900 border-b border-gray-700 animate-in slide-in-from-top-2 duration-200">
-                        <div className="bg-gray-800 rounded-lg p-1">
+                    <div className="px-6 pb-4 bg-gray-900/80 border-b border-gray-700/50 animate-in slide-in-from-top-2 duration-200">
+                        <div className="bg-gray-800/50 rounded-lg p-1 border border-gray-700/50">
                             <LocationSelector onLocationSelect={setSelectedLocation} />
                         </div>
                     </div>
@@ -146,30 +146,30 @@ export const ChatAssistant = () => {
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gray-900/50">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent">
                 {messages.map((msg) => (
                     <div
                         key={msg.id}
                         className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                     >
                         <div
-                            className={`max-w-[80%] rounded-2xl p-4 ${msg.role === 'user'
-                                ? 'bg-blue-600 text-white rounded-br-none'
-                                : 'bg-gray-700 text-gray-100 rounded-bl-none'
+                            className={`max-w-[85%] rounded-2xl p-4 shadow-md ${msg.role === 'user'
+                                ? 'bg-primary text-white rounded-br-sm'
+                                : 'bg-gray-700/50 backdrop-blur-sm border border-gray-600/50 text-gray-100 rounded-bl-sm'
                                 }`}
                         >
-                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                            <p className="whitespace-pre-wrap leading-relaxed">{msg.content}</p>
 
                             {/* Sources */}
                             {msg.sources && msg.sources.length > 0 && (
-                                <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
+                                <div className="mt-4 pt-3 border-t border-white/10 space-y-2">
                                     <p className="text-xs font-semibold opacity-70 mb-2 flex items-center">
                                         <FileText className="w-3 h-3 mr-1" /> Fonti Rilevate:
                                     </p>
                                     {msg.sources.map((src, idx) => (
-                                        <div key={idx} className="text-xs bg-black/20 p-2 rounded">
-                                            <p className="font-medium text-blue-300">{src.filename} (p. {src.page})</p>
-                                            <p className="opacity-70 truncate italic mt-1">"{src.content_preview}"</p>
+                                        <div key={idx} className="text-xs bg-black/20 p-2.5 rounded hover:bg-black/30 transition-colors">
+                                            <p className="font-medium text-blue-200">{src.filename} <span className="opacity-70">(pag. {src.page})</span></p>
+                                            <p className="opacity-70 truncate italic mt-1 border-l-2 border-blue-400/50 pl-2">"{src.content_preview}"</p>
                                         </div>
                                     ))}
                                 </div>
@@ -180,9 +180,9 @@ export const ChatAssistant = () => {
 
                 {isLoading && (
                     <div className="flex justify-start">
-                        <div className="bg-gray-700 rounded-2xl rounded-bl-none p-4 flex items-center space-x-2">
-                            <Loader2 className="w-4 h-4 animate-spin text-blue-400" />
-                            <span className="text-sm text-gray-400">Sto analizzando le normative...</span>
+                        <div className="bg-gray-700/50 backdrop-blur-sm border border-gray-600/50 rounded-2xl rounded-bl-sm p-4 flex items-center space-x-3">
+                            <Loader2 className="w-4 h-4 animate-spin text-primary" />
+                            <span className="text-sm text-gray-300">Sto analizzando le normative...</span>
                         </div>
                     </div>
                 )}
@@ -190,7 +190,7 @@ export const ChatAssistant = () => {
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-gray-800 border-t border-gray-700">
+            <div className="p-4 bg-gray-900/50 backdrop-blur-sm border-t border-gray-700/50">
                 <div className="flex items-center space-x-4">
                     <input
                         type="text"
@@ -198,13 +198,13 @@ export const ChatAssistant = () => {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                         placeholder="Chiedi qualcosa sulle normative..."
-                        className="flex-1 bg-gray-900 text-white rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-700 placeholder-gray-500"
+                        className="glass-input flex-1 py-3 text-sm md:text-base"
                         disabled={isLoading}
                     />
                     <button
                         onClick={handleSend}
                         disabled={isLoading || !input.trim()}
-                        className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white p-3 rounded-xl transition-colors"
+                        className="bg-primary hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed text-white p-3 rounded-xl transition-all shadow-lg shadow-primary/20 hover:shadow-primary/40 active:scale-95"
                     >
                         <Send className="w-5 h-5" />
                     </button>

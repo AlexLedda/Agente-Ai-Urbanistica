@@ -5,7 +5,19 @@ export default {
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
     theme: {
-        extend: {},
+        extend: {
+            colors: {
+                primary: 'rgb(var(--primary) / <alpha-value>)',
+                'primary-dark': 'rgb(var(--primary-dark) / <alpha-value>)',
+                secondary: 'rgb(var(--secondary) / <alpha-value>)',
+                accent: 'rgb(var(--accent) / <alpha-value>)',
+                surface: 'rgb(var(--surface) / <alpha-value>)',
+                background: 'rgb(var(--background) / <alpha-value>)',
+            },
+            fontFamily: {
+                sans: ['Inter', 'system-ui', 'sans-serif'],
+            }
+        },
     },
     plugins: [],
 }
