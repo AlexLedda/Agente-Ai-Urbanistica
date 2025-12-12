@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     # API Configuration
     api_host: str = "0.0.0.0"
     api_port: int = 8000
-    cors_origins: str = "http://localhost:3000,http://localhost:5173"
+    cors_origins: str = "http://localhost:3000,http://localhost:5173,http://54.85.85.121:8081,http://34.203.191.130:8081"
     
     # Scraper Configuration
     scraper_user_agent: str = "Mozilla/5.0 (compatible; UrbanisticaBot/1.0)"
