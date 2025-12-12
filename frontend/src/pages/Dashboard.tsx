@@ -124,7 +124,7 @@ export const Dashboard = () => {
                     <button onClick={logout} className="text-gray-400"><LogOut size={20} /></button>
                 </header>
 
-                <div className="flex-1 overflow-auto p-4 md:p-8 relative z-10 scroll-smooth">
+                <div className="flex-1 overflow-auto p-4 md:p-8 relative z-10 scroll-smooth pb-20 md:pb-8">
                     <div className="max-w-6xl mx-auto">
                         {activeTab === 'chat' && <ChatAssistant />}
 
@@ -361,6 +361,24 @@ export const Dashboard = () => {
                                 </div>
                             </div>
                         )}
+                    </div>
+                </div>
+                {/* Mobile Bottom Navigation */}
+                <div className="md:hidden absolute bottom-0 left-0 right-0 bg-gray-900/90 backdrop-blur-lg border-t border-gray-800 p-2 z-30 pb-safe">
+                    <div className="flex justify-around items-center">
+                        {navItems.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => setActiveTab(item.id as any)}
+                                className={`flex flex-col items-center p-2 rounded-lg transition-colors ${activeTab === item.id
+                                    ? 'text-primary bg-primary/10'
+                                    : 'text-gray-400 hover:text-white'
+                                    }`}
+                            >
+                                <item.icon size={20} />
+                                <span className="text-[10px] mt-1 font-medium">{item.label}</span>
+                            </button>
+                        ))}
                     </div>
                 </div>
             </main>
