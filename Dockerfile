@@ -9,19 +9,9 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-# Copia e installa solo dipendenze essenziali backend
+# Copia e installa tutte le dipendenze dal requirements.txt
 COPY backend/requirements.txt ./
-RUN pip install --no-cache-dir \
-    fastapi \
-    uvicorn[standard] \
-    python-jose[cryptography] \
-    passlib[bcrypt] \
-    python-multipart \
-    pydantic \
-    pydantic-settings \
-    loguru \
-    python-dotenv \
-    bcrypt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copia backend
 COPY backend/ /app/backend/
