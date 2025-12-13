@@ -18,7 +18,10 @@ RUN pip install --no-cache-dir \
     passlib[bcrypt] \
     python-multipart \
     pydantic \
-    pydantic-settings
+    pydantic-settings \
+    loguru \
+    python-dotenv \
+    bcrypt
 
 # Copia backend
 COPY backend/ /app/backend/
