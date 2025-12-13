@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: agente-urbanistica-ai
+    runtime: docker
+    repo: https://github.com/AlexLedda/Agente-Ai-Urbanistica
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "30"
+      - key: LOG_LEVEL
+        value: INFO
+      - key: API_HOST
+        value: 0.0.0.0
+      - key: API_PORT
+        value: "8000"
+    healthCheckPath: /health
+    autoDeploy: true
