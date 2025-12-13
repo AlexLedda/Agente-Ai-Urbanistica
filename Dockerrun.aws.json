@@ -1,0 +1,24 @@
+{
+    "AWSEBDockerrunVersion": "1",
+    "Image": {
+        "Name": "agente-urbanistica-ai",
+        "Update": "true"
+    },
+    "Ports": [
+        {
+            "ContainerPort": 80,
+            "HostPort": 80
+        }
+    ],
+    "Volumes": [
+        {
+            "HostDirectory": "/var/app/data",
+            "ContainerDirectory": "/app/data"
+        },
+        {
+            "HostDirectory": "/var/app/logs",
+            "ContainerDirectory": "/app/logs"
+        }
+    ],
+    "Logging": "/app/logs"
+}
