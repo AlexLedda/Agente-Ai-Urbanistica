@@ -1,0 +1,57 @@
+# Dockerfile specific for Hugging Face Spaces
+# Uses the same base but optimized for HF permissions (non-root) and port 7860
+
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    API_PORT=7860 \
+    API_HOST=0.0.0.0 \
+    HOME=/app
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    libyaml-dev \
+    libgl1 \
+    libglib2.0-0 \
+    tesseract-ocr \
+    tesseract-ocr-ita \
+    tesseract-ocr-eng \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user "user" with UID 1000
+RUN useradd -m -u 1000 user
+
+# Copy requirements
+COPY requirements.txt .
+
+# Install dependencies
+RUN pip install --no-cache-dir --upgrade pip setuptools wheel Cython PyYAML && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Copy source code
+COPY . /app/backend
+
+# Create necessary directories
+RUN mkdir -p /app/data/vectordb /app/data/normative /app/data/uploads /app/data/cache /app/logs
+
+# Fix permissions for the non-root user
+RUN chown -R user:user /app
+
+# Switch to non-root user
+USER user
+
+# Expose Hugging Face standard port
+EXPOSE 7860
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:7860/health || exit 1
+
+# Start command
+CMD ["uvicorn", "backend.api.main:app", "--host", "0.0.0.0", "--port", "7860"]

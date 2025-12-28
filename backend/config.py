@@ -3,6 +3,7 @@ Configurazione centralizzata per l'agente AI di conformità urbanistica.
 """
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import List, Optional
+from pydantic import Field
 from pathlib import Path
 
 
@@ -38,7 +39,7 @@ class AppSettings(BaseSettings):
     
     # API Configuration
     api_host: str = "0.0.0.0"
-    api_port: int = 8000
+    api_port: int = Field(default=8000, alias="PORT")
     cors_origins: str = "http://localhost:3000,http://localhost:5173,http://54.85.85.121:8081,http://34.203.191.130:8081"
     
     # Scraper Configuration
